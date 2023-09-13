@@ -12,6 +12,17 @@ const port = process.env.PORT || 3003;
 
 const conn = require('./db/conn');
 
+// Models
+const Tought = require('./models/Tought');
+const User = require('./models/User');
+
+// import Routes
+const toughtsRoutes = require('./routes/toughtsRoutes');
+const authRoutes = require('./routes/authRoutes');
+
+// import Controller
+const ToughtController = require('./controllers/ToughtController');
+
 // Template engine
 app.engine('handlebars', exphbs.engine());
 app.set('view engine', 'handlebars');
@@ -58,6 +69,12 @@ app.use((req, res, next) => {
 
 // CSS
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Routes
+app.use('/toughts', toughtsRoutes);
+app.use('/', authRoutes);
+
+app.get('/', ToughtController.showToughts);
 
 conn
   .sync()
