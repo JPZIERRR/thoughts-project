@@ -13,19 +13,38 @@
     />
   </head>
   <body>
-    <header>
+    <input
+      id='close-menu'
+      class='close-menu'
+      type='checkbox'
+      aria-label='Close menu'
+      role='button'
+    />
+    <label class='close-menu-label' for='close-menu' title='close menu'></label>
+    <header class='menu'>
       <nav class='navbar'>
-        <a href='/' class='logo'>
+        <a
+          href='/'
+          class='logo'
+          onclick="getElementById('close-menu').checked = false"
+        >
           <img src='/img/toughts_logo.png' alt='Toughts' />
         </a>
 
-        <ul>
+        <ul onclick="getElementById('close-menu').checked = false">
           <li><a href='/'>Pensamentos</a></li>
-          <li><a href='/login'>Entrar</a></li>
-          <li><a href='/register'>Registrar</a></li>
+          {{#if session.userid}}
+            <li><a href='/toughts/dashboard'>Dashboard</a></li>
+            <li><a href='/logout'>Sair</a></li>
+          {{else}}
+            <li><a href='/login'>Entrar</a></li>
+            <li><a href='/register'>Registrar</a></li>
+          {{/if}}
         </ul>
       </nav>
     </header>
+
+    <div class='menu-spacing'></div>
     <div class='container'>
       {{#if messages.message}}
         <div class='message'>

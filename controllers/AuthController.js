@@ -1,6 +1,42 @@
+const bcrypt = require('bcryptjs');
+
+const User = require('../models/User');
+
 module.exports = class AuthController {
   static login(req, res) {
     res.render('auth/login');
+  }
+
+  static async loginPost(req, res) {
+    const { email, password } = req.body;
+
+    // checar se o usuário existe
+    const user = await User.findOne({ where: { email: email } });
+
+    if (!user) {
+      req.flash('message', 'Usuário não encontrado!');
+      res.render('auth/login');
+
+      return;
+    }
+
+    // checar se a senha está correta
+    const passwordMatch = bcrypt.compareSync(password, user.password);
+
+    if (!passwordMatch) {
+      req.flash('message', 'Senha incorreta!!');
+      res.render('auth/login');
+
+      return;
+    }
+
+    req.session.userid = user.id;
+
+    req.flash('message', 'Login realizado!');
+
+    req.session.save(() => {
+      res.redirect('/');
+    });
   }
 
   static register(req, res) {
@@ -16,5 +52,44 @@ module.exports = class AuthController {
 
       return;
     }
+
+    // Checar se existe usuário
+    const checkIfUserExists = await User.findOne({ where: { email: email } });
+
+    if (checkIfUserExists) {
+      req.flash('message', 'Email já registrado!');
+      res.render('auth/register');
+
+      return;
+    }
+
+    // Criar senha
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+
+    const user = {
+      name,
+      email,
+      password: hashedPassword,
+    };
+
+    try {
+      const createdUser = await User.create(user);
+
+      req.session.userid = createdUser.id;
+
+      req.flash('message', 'Cadastro realizado!');
+
+      req.session.save(() => {
+        res.redirect('/');
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  static logout(req, res) {
+    req.session.destroy();
+    res.redirect('/login');
   }
 };
